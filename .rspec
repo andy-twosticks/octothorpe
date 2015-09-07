@@ -1,5 +1,5 @@
 --color
 --require spec_helper
---require house_formatter
+--require doc_no_pending
 -I .
 --format progress

@@ -2,8 +2,6 @@
 
 require 'forwardable'
 
-require "octothorpe/version"
-
 
 ##
 # A partial replacement for Hash
@@ -35,6 +33,8 @@ class Octothorpe
   def_delegators :@inner_hash, :empty?, :has_key?, :has_value?, :include?
   def_delegators :@inner_hash, :each, :each_key, :each_value, :keys, :values
   def_delegators :@inner_hash, :select, :map, :reject, :inject
+
+  VERSION = '0.1.0'
 
 
   ##
