@@ -1,11 +1,13 @@
 # Octothorpe
 
-A partial replacement for Hash
+A very simple hash-like class that borrows a little from OpenStruct, etc.
 
 * Treats string and symbol keys as equal
 * Access member objects with ot.>>.keyname
 * Guard conditions allow you to control what returns if key is not present
 * Pretty much read-only, for better or worse
+
+Meant to facilitate message-passing between classes.
 
 ## Installation
 

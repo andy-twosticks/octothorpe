@@ -4,12 +4,14 @@ require 'forwardable'
 
 
 ##
-# A partial replacement for Hash
+# A very simple hash-like class that borrows a little from OpenStruct, etc.
 #
 # * Treats string and symbol keys as equal
 # * Access member objects with ot.>>.keyname
 # * Guard conditions allow you to control what returns if key is not present
 # * Pretty much read-only, for better or worse
+#
+# Meant to facilitate message-passing between classes.
 #
 # Simple example:
 #     ot = Octotghorpe.new(one: 1, "two" => 2, "weird key" => 3)
@@ -24,8 +26,12 @@ require 'forwardable'
 #     ot.>>.three     # -> [] 
 #     ot.>>.three[9]  # valid (of course; returns nil)
 #
-# Octothorpe responds to a good subset of the methods that hash does
-# (although, not the write methods).  
+# Octothorpe additionally responds to the following methods exactly as a Hash
+# would:
+#
+#    empty?, has_key?, has_value?, include?
+#    each,   each_key, each_value, keys,    values
+#    select, map,      reject,     inject
 #
 class Octothorpe
   extend Forwardable
@@ -34,23 +40,23 @@ class Octothorpe
   def_delegators :@inner_hash, :each, :each_key, :each_value, :keys, :values
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
+  # Gem version number
   VERSION = '0.1.0'
 
 
-  ##
-  # Pet error classes
-  # These are a thing now
-  # Play dead, _BadHash_!
-  #
+  # Generic Octothorpe error class
   class OctoError < StandardError; end
-  class BadHash   < OctoError;     end
-  class Frozen    < OctoError;     end
-  ##
+
+  # Raised when Octothorpe needs a hash but didn't get one
+  class BadHash < OctoError; end
+
+  # Raised when caller tries to modify a frozen Octothorpe
+  class Frozen < OctoError; end
 
 
   ## 
-  # Inner class for storage 
-  # This is to minimise namespace collision with key names
+  # Inner class for storage. This is to minimise namespace collision with key
+  # names.  Not exposed to Octothorpe's caller.
   #
   class Storage
     attr_reader :store
@@ -69,6 +75,9 @@ class Octothorpe
 
 
   ##
+  # :call-seq:
+  #   ot = Octothrpe.new(hash)
+  #
   # Initialise an Octothorpe object by passing it a hash.
   #
   # You can create an empty OT by calling Octothorpe.new, but there's probably
@@ -87,7 +96,7 @@ class Octothorpe
   # :call-seq:
   #   ot.>>.keyname
   #
-  # You can use _>>_ to access member objects in somewhat the same way as an
+  # You can use >> to access member objects in somewhat the same way as an
   # OpenStruct.
   #
   #   ot = Octotghorpe.new(one: 1, "two" => 2)
@@ -100,13 +109,18 @@ class Octothorpe
 
 
   ##
-  # You can use get to access member object values instead of the _>>_ syntax.
+  # :call-seq:
+  #   ot.get(key)
+  #   ot.send(key)
   #
-  # Unlike _>>_, this works for keys with spaces, or keys that have the same
-  # name # as methods on Object.
+  # You can use get to access member object values instead of the >> syntax.
+  #
+  # Unlike >>, this works for keys with spaces, or keys that have the same name
+  # as methods on Object.
   #
   def get(key); @store.store[key.to_sym]; end
-  alias send get # OpenStruct calls this 'send' for some reason?
+
+  alias send get
 
 
   ##

@@ -1,15 +1,26 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'octothorpe/version'
+require 'octothorpe'
 
 Gem::Specification.new do |spec|
   spec.name          = "octothorpe"
   spec.version       = Octothorpe::VERSION
   spec.authors       = ["Andy Jones"]
   spec.email         = ["andy@twosticksconsulting.co.uk"]
-  spec.summary       = %q{A simple Hash-substitute: read-only; a little like an Openstruct.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{Like a Hash. Better for message passing between classes, I hope.}
+
+  spec.description   = <<-DESCRIPTION.gsub(/^\s+/, '')
+    A very simple hash-like class that borrows a little from OpenStruct, etc.
+
+    * Treats string and symbol keys as equal
+    * Access member objects with ot.>>.keyname
+    * Guard conditions allow you to control what returns if key is not present
+    * Pretty much read-only, for better or worse
+
+    Meant to facilitate message-passing between classes.
+  DESCRIPTION
+
   spec.homepage      = ""
   spec.license       = "MIT"
 
