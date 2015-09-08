@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
     Meant to facilitate message-passing between classes.
   DESCRIPTION
 
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/andy-twosticks/octothorpe"
   spec.license       = "MIT"
 
   spec.files         = `hg status -macn0`.split("\x0")
