@@ -41,7 +41,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
 
 
   # Generic Octothorpe error class
@@ -121,6 +121,7 @@ class Octothorpe
   def get(key); @store.store[key.to_sym]; end
 
   alias send get
+  alias [] get
 
 
   ##

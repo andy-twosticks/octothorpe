@@ -67,6 +67,16 @@ describe Octothorpe do
   end
 
 
+  describe "#[]" do
+
+    it "acts just like get" do
+      expect( @ot[:one] ).to eq @hash2[:one]
+      expect( @ot[:two] ).to eq @hash2[:two]
+    end
+
+  end
+
+
   describe "#to_h" do
 
     it "dumps the OT as a hash" do
