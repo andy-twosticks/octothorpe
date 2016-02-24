@@ -41,7 +41,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.1.1'
+  VERSION = '0.1.2'
 
 
   # Generic Octothorpe error class
@@ -59,15 +59,15 @@ class Octothorpe
   # names.  Not exposed to Octothorpe's caller.
   #
   class Storage
-    attr_reader :store
+    attr_reader :octothorpe_store
 
     def initialize(hash)
-      @store = hash
+      @octothorpe_store = hash
     end
 
     def method_missing(method, *attrs)
       super if (block_given? || !attrs.empty?)
-      @store[method.to_sym]
+      @octothorpe_store[method.to_sym]
     end
 
   end
@@ -88,7 +88,7 @@ class Octothorpe
   #
   def initialize(hash=nil)
     @store = Storage.new( symbol_hash(hash || {}) )
-    @inner_hash = @store.store
+    @inner_hash = @store.octothorpe_store
   end
 
 
@@ -118,7 +118,7 @@ class Octothorpe
   # Unlike >>, this works for keys with spaces, or keys that have the same name
   # as methods on Object.
   #
-  def get(key); @store.store[key.to_sym]; end
+  def get(key); @store.octothorpe_store[key.to_sym]; end
 
   alias send get
   alias [] get
@@ -127,7 +127,7 @@ class Octothorpe
   ##
   # Returns a hash of the object.
   #
-  def to_h; @store.store; end
+  def to_h; @store.octothorpe_store; end
 
 
   ##
@@ -146,7 +146,7 @@ class Octothorpe
   #
   def guard(klass, *keys)
     raise Frozen if self.frozen?
-    keys.map(&:to_sym).each{|k| @store.store[k] ||= klass.new }
+    keys.map(&:to_sym).each{|k| @store.octothorpe_store[k] ||= klass.new }
     self
   end
 
@@ -162,13 +162,14 @@ class Octothorpe
   # if it is anything else.
   #
   def merge(other)
+    thisHash  = @store.octothorpe_store
     otherHash = symbol_hash(other)
 
     merged = 
       if block_given?
-        @store.store.merge(otherHash) {|key,old,new| yield key, old, new }
+        thisHash.merge(otherHash) {|key,old,new| yield key, old, new }
       else
-        @store.store.merge(otherHash)
+        thisHash.merge(otherHash)
       end
 
     return Octothorpe.new(merged)

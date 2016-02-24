@@ -10,4 +10,5 @@ tmp/
 *.o
 *.a
 mkmf.log
-.rbenv-gemsets
+.ruby*
+.rbenv*
