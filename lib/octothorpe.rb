@@ -14,7 +14,7 @@ require 'forwardable'
 # Meant to facilitate message-passing between classes.
 #
 # Simple example:
-#     ot = Octotghorpe.new(one: 1, "two" => 2, "weird key" => 3)
+#     ot = Octothorpe.new(one: 1, "two" => 2, "weird key" => 3)
 #     ot.>>.one            # -> 1
 #     ot.>>.two            # -> 2
 #     ot.get("weird key")  # -> 3
@@ -112,6 +112,7 @@ class Octothorpe
   # :call-seq:
   #   ot.get(key)
   #   ot.send(key)
+  #   ot[key]
   #
   # You can use get to access member object values instead of the >> syntax.
   #
@@ -156,7 +157,7 @@ class Octothorpe
   #   ot.merge(other)                              -> new_ot
   #   ot.merge(other){|key, oldval, newval| block} -> new_ot
   #
-  # Exactly has _Hash.merge_, but returns a new Octothorpe object.
+  # Exactly as _Hash.merge_, but returns a new Octothorpe object.
   #
   # You may pass a hash or an octothorpe. Raises Octothorpe::BadHash
   # if it is anything else.
@@ -172,7 +173,7 @@ class Octothorpe
         thisHash.merge(otherHash)
       end
 
-    return Octothorpe.new(merged)
+    Octothorpe.new(merged)
   end
 
 
