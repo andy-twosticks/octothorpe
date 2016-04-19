@@ -4,9 +4,11 @@ describe Octothorpe do
 
 
   before do
-    @hash  = {one: 'a', 'two' => 2, dup: 3, "weird key" => 4}
-    @hash2 = @hash.each_with_object({}) {|(k,v),m| m[k.to_sym] = v }
-    @ot    = Octothorpe.new(@hash)
+    @hash     = {one: 'a', 'two' => 2, dup: 3, "weird key" => 4}
+    @hash2    = @hash.each_with_object({}) {|(k,v),m| m[k.to_sym] = v }
+    @ot       = Octothorpe.new(@hash)
+    @subset   = @hash.reject{|k,_| k == :dup }
+    @superset = @hash.dup; @superset[:extra] = 42
   end
 
 
@@ -41,8 +43,8 @@ describe Octothorpe do
     end
 
     it "throws an exception if passed a parameter or block" do
-      expect{ @ot.>>.three(1)          }.to raise_exception
-      expect{ @ot.>>.three{|x| puts x} }.to raise_exception
+      expect{ @ot.>>.two(1)          }.to raise_exception NoMethodError
+      expect{ @ot.>>.two{|x| puts x} }.to raise_exception NoMethodError
     end
 
   end
@@ -161,6 +163,56 @@ describe Octothorpe do
   end
 
 
+  describe "#>" do
+
+    context 'when passed a hash' do
+      it 'returns true for a subset' do
+        expect( @ot > @subset ).to eq true
+      end
+
+      it 'returns false for a superset' do
+        expect( @ot > @superset ).to eq false
+      end
+    end
+
+    context 'when passed an OT' do
+      it 'returns true for a subset' do
+        expect( @ot > Octothorpe.new(@subset) ).to eq true
+      end
+
+      it 'returns false for a superset' do
+        expect( @ot > Octothorpe.new(@superset) ).to eq false
+      end
+    end
+
+  end
+
+
+  describe '#<' do
+
+    context 'when passed a hash' do
+      it 'returns false for a subset' do
+        expect( @ot < @subset ).to eq false
+      end
+
+      it 'returns true for a superset' do
+        expect( @ot < @superset ).to eq true
+      end
+    end
+
+    context 'when passed an OT' do
+      it 'returns false for a subset' do
+        expect( @ot < Octothorpe.new(@subset) ).to eq false
+      end
+
+      it 'returns true for a superset' do
+        expect( @ot < Octothorpe.new(@superset) ).to eq true
+      end
+    end
+
+  end
+
+
   describe "(miscelaneous other stuff)" do
     # I "imagine" that the actual class uses Forwardable, but the test code
     # shouldn't know or care about that.  In any case, just testing with
@@ -178,6 +230,7 @@ describe Octothorpe do
 
       expect( @ot.include?(:two) ).to eq true
       expect( @ot.include?(:foo) ).not_to eq true
+
     end
 
     it "behaves like a hash for a bunch of methods that return an array" do
