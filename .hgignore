@@ -12,3 +12,4 @@ tmp/
 mkmf.log
 .ruby*
 .rbenv*
+.project

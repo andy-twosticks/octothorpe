@@ -32,6 +32,7 @@ require 'forwardable'
 #    empty?, has_key?, has_value?, include?
 #    each,   each_key, each_value, keys,    values
 #    select, map,      reject,     inject
+#    merge,  <,        >
 #
 class Octothorpe
   extend Forwardable
@@ -41,7 +42,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.1.2'
+  VERSION = '0.2.0'
 
 
   # Generic Octothorpe error class
@@ -174,6 +175,34 @@ class Octothorpe
       end
 
     Octothorpe.new(merged)
+  end
+
+
+  ##
+  # Return true if this OT is a subset of the given OT or Hash
+  #
+  def <(other)
+    thisHash  = @store.octothorpe_store.to_h
+    otherHash = symbol_hash(other)
+    thisHash < otherHash
+  end
+
+
+  ##
+  # Return true if this OT is a superset of the given OT or Hash
+  #
+  def >(other)
+    thisHash  = @store.octothorpe_store.to_h
+    otherHash = symbol_hash(other)
+    thisHash > otherHash
+  end
+
+
+  ##
+  # Inspect exposes a view of the inner hash
+  #
+  def inspect
+    "#<Octothorpe#{@store.octothorpe_store.inspect}>"
   end
 
 
