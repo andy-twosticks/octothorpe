@@ -26,8 +26,7 @@ require 'forwardable'
 #     ot.>>.three     # -> [] 
 #     ot.>>.three[9]  # valid (of course; returns nil)
 #
-# Octothorpe additionally responds to the following methods exactly as a Hash
-# would:
+# Octothorpe additionally responds to the following methods exactly as a Hash would:
 #
 #    empty?, has_key?, has_value?, include?
 #    each,   each_key, each_value, keys,    values
@@ -42,7 +41,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.2.0'
+  VERSION = '0.3.0'
 
 
   # Generic Octothorpe error class
@@ -56,8 +55,8 @@ class Octothorpe
 
 
   ## 
-  # Inner class for storage. This is to minimise namespace collision with key
-  # names.  Not exposed to Octothorpe's caller.
+  # Inner class for storage. This is to minimise namespace collision with key names. Not exposed to
+  # Octothorpe's caller.
   #
   class Storage
     attr_reader :octothorpe_store
@@ -81,11 +80,11 @@ class Octothorpe
   #
   # Initialise an Octothorpe object by passing it a hash.
   #
-  # You can create an empty OT by calling Octothorpe.new, but there's probably
-  # little utility in that, given that it is read-only.
+  # You can create an empty OT by calling Octothorpe.new, but there's probably little utility in
+  # that, given that it is read-only.
   #
-  # If you pass anything other than nil or something OT can treat as a Hash,
-  # you will cause an Octothorpe::BadHash exception.
+  # If you pass anything other than nil or something OT can treat as a Hash, you will cause an
+  # Octothorpe::BadHash exception.
   #
   def initialize(hash=nil)
     @store = Storage.new( symbol_hash(hash || {}) )
@@ -97,14 +96,13 @@ class Octothorpe
   # :call-seq:
   #   ot.>>.keyname
   #
-  # You can use >> to access member objects in somewhat the same way as an
-  # OpenStruct.
+  # You can use >> to access member objects in somewhat the same way as an OpenStruct.
   #
   #   ot = Octotghorpe.new(one: 1, "two" => 2)
   #   ot.>>.one  # -> 1
   #
-  # This will not work for members that have keys with spaces in, or keys which
-  # have the same name as methods on Object. Use _get_ for those.
+  # This will not work for members that have keys with spaces in, or keys which have the same name
+  # as methods on Object. Use _get_ for those.
   #
   def >>; @store; end
 
@@ -117,8 +115,8 @@ class Octothorpe
   #
   # You can use get to access member object values instead of the >> syntax.
   #
-  # Unlike >>, this works for keys with spaces, or keys that have the same name
-  # as methods on Object.
+  # Unlike >>, this works for keys with spaces, or keys that have the same name as methods on
+  # Object.
   #
   def get(key); @store.octothorpe_store[key.to_sym]; end
 
@@ -135,20 +133,31 @@ class Octothorpe
   ##
   # :call-seq:
   #   ot.guard( class, key [, key, ...] )
+  #   ot.guard( key, [,key, ...] ) {|k| ... }
   #
-  # Guarantees the initial state of a memnber. Each key that is not already
-  # present will be set to <class>.new. Has no effect if key is already
-  # present.
+  # Guarantees the initial state of a memnber. Each key that is not already present will be set to
+  # <class>.new. Has no effect if key is already present. Class must be some class Thing that can
+  # respond to a vanilla Thing.new.
   #
-  # Class must be some class Thing that can respond to a vanilla Thing.new.
+  # Alternatively, for the block form, the key is passed to the block, and the value of the key
+  # becomes the return value of the block ... but again, ONLY if the key is not already set.
   #
-  # Note that this is the only time that you can modify an Octothorpe object
-  # once it is created. If you call _freeze_ on an it, it will become genuinely
-  # read-only, and any call to guard from then on will raise Octothorpe::Frozen.
+  # Note that this is the only time that you can modify an Octothorpe object once it is created. If
+  # you call _freeze_ on an it, it will become genuinely read-only, and any call to guard from then
+  # on will raise Octothorpe::Frozen.
   #
-  def guard(klass, *keys)
+  def guard(*args)
     raise Frozen if self.frozen?
-    keys.map(&:to_sym).each{|k| @store.octothorpe_store[k] ||= klass.new }
+
+    klass = args.shift unless block_given?
+    keys  = args.map(&:to_sym)
+
+    if block_given?
+      keys.each{|k| @store.octothorpe_store[k] ||= yield k }
+    else
+      keys.each{|k| @store.octothorpe_store[k] ||= klass.new }
+    end
+
     self
   end
 
@@ -160,8 +169,7 @@ class Octothorpe
   #
   # Exactly as _Hash.merge_, but returns a new Octothorpe object.
   #
-  # You may pass a hash or an octothorpe. Raises Octothorpe::BadHash
-  # if it is anything else.
+  # You may pass a hash or an octothorpe. Raises Octothorpe::BadHash if it is anything else.
   #
   def merge(other)
     thisHash  = @store.octothorpe_store
@@ -178,24 +186,15 @@ class Octothorpe
   end
 
 
-  ##
-  # Return true if this OT is a subset of the given OT or Hash
+  # 
+  # Resolve some of the standard comparisons (with an OT or a hash)
   #
-  def <(other)
-    thisHash  = @store.octothorpe_store.to_h
-    otherHash = symbol_hash(other)
-    thisHash < otherHash
-  end
-
-
-  ##
-  # Return true if this OT is a superset of the given OT or Hash
-  #
-  def >(other)
-    thisHash  = @store.octothorpe_store.to_h
-    otherHash = symbol_hash(other)
-    thisHash > otherHash
-  end
+  
+  def ==(other); compare_as_hash(other, :==); end
+  def <(other);  compare_as_hash(other, :<);  end
+  def >(other);  compare_as_hash(other, :>);  end
+  def >=(other); compare_as_hash(other, :>=); end
+  def <=(other); compare_as_hash(other, :<=); end
 
 
   ##
@@ -222,6 +221,16 @@ class Octothorpe
     raise BadHash
   end
 
+
+  ##
+  # Given an 'other' - Hash or OT - render both self and other down to a hash then run the given
+  # comparason on them and return the result
+  #
+  def compare_as_hash(other, method)
+    thisHash  = @store.octothorpe_store.to_h
+    otherHash = symbol_hash(other)
+    thisHash.send(method, otherHash)
+  end
 
 end
 

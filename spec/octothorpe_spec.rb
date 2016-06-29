@@ -90,35 +90,64 @@ describe Octothorpe do
 
   describe "#guard" do
 
-    it "sets the given fields with a default value for the class" do
-      @ot.guard(Array, :alpha)
-      @ot.guard(Hash,  :beta)
-
-      expect( @ot.>>.alpha ).to eq([])
-      expect( @ot.>>.beta  ).to eq({})
+    it "raises Octothorpe::Frozen if the OT is frozen" do
+      @ot.freeze
+      expect{ @ot.guard(Hash, :foo) }.to raise_exception Octothorpe::Frozen
     end
 
     it "returns self" do
       expect( @ot.guard(Array, :foo) ).to eq @ot
     end
 
-    it "only sets the field if it does not already exist" do
-      @ot.guard(Array, :one)
-      expect( @ot.>>.one ).to eq @hash2[:one]
+    context "when given a class" do
+
+      it "accepts a class and list of keys" do
+        @ot.guard(Array, :fred, :daphne, "velma")
+        otHash = @ot.to_h
+        expect( otHash[:fred]   ).to eq([])
+        expect( otHash[:daphne] ).to eq([])
+        expect( otHash[:velma]  ).to eq([])
+      end
+
+      it "sets the given fields with a default value for the class" do
+        @ot.guard(Array, :alpha)
+        @ot.guard(Hash,  :beta)
+
+        expect( @ot.>>.alpha ).to eq([])
+        expect( @ot.>>.beta  ).to eq({})
+      end
+
+      it "only sets the field if it does not already exist" do
+        @ot.guard(Array, :one)
+        expect( @ot.>>.one ).to eq @hash2[:one]
+      end
+
     end
 
-    it "accepts a list of keys" do
-      @ot.guard(Array, :fred, :daphne, "velma")
-      otHash = @ot.to_h
-      expect( otHash[:fred]   ).to eq([])
-      expect( otHash[:daphne] ).to eq([])
-      expect( otHash[:velma]  ).to eq([])
+    context "when given a block" do
+      let(:foo) do
+        @ot.guard(:fred, :daphne, "velma"){|k| "jinks!" }
+      end
+
+      it "accepts a list of keys" do
+        expect{foo}.not_to raise_exception
+      end
+
+      it "sets the given fields using the block" do
+        otHash = foo.to_h
+        expect( otHash[:fred]   ).to eq("jinks!")
+        expect( otHash[:daphne] ).to eq("jinks!")
+        expect( otHash[:velma]  ).to eq("jinks!")
+      end
+
+      it "only sets the field if it does not already exist" do
+        otHash = foo.to_h
+        expect( otHash[:one]   ).to eq("a")
+        expect( otHash[:'weird key'] ).to eq(4)
+      end
+
     end
 
-    it "raises Octothorpe::Frozen if the OT is frozen" do
-      @ot.freeze
-      expect{ @ot.guard(Hash, :foo) }.to raise_exception Octothorpe::Frozen
-    end
 
   end
 
@@ -158,6 +187,47 @@ describe Octothorpe do
       ans = ot.merge(h2){|k,o,n| o.to_s + '.' + n.to_s }
 
       expect( ans.to_h ).to eq( {one: '1.3', two: '2.4'} )
+    end
+
+  end
+
+
+  describe "#==" do
+
+    context 'when passed a hash' do
+      it 'returns true if the hash has the same keys' do
+        expect( @ot == @hash2 ).to eq true
+      end
+
+      it 'returns true if the hash has the same keys but as strings' do
+        expect( @ot == @hash ).to eq true
+      end
+
+      it 'returns false if the hash has different keys' do
+        expect( @ot == {one: 1, four: 2} ).to eq false
+      end
+
+      it 'returns false if the hash has the same keys but different values' do
+        h = @hash.merge(one: 'oneone')
+        expect( @ot == h ).to eq false
+      end
+    end
+
+    context 'when passed an OT' do
+      it 'returns true if the ot has the same keys' do
+        ot2 = Octothorpe.new(@hash)
+        expect( @ot == ot2 ).to eq true
+      end
+
+      it 'returns false if the ot has different keys' do
+        ot2 = Octothorpe.new( @hash.merge(four: 4) )
+        expect( @ot == ot2 ).to eq false
+      end
+
+      it 'returns false if the ot has the same keys but different values' do
+        ot2 = @hash.merge(one: 'oneone')
+        expect( @ot == ot2 ).to eq false
+      end
     end
 
   end
@@ -213,10 +283,39 @@ describe Octothorpe do
   end
 
 
+  ## 
+  # Even blindfold I think it's fair to say that I must have implemented >= using > and ==, but a
+  # quick happy path test just to be paranoid...
+  #
+  describe '#<=' do
+
+    it "returns true if the other is a subset" do
+      expect( @ot <= @superset ).to eq true
+    end
+
+    it "returns true if the other is the same" do 
+      expect( @ot <= @hash2 ).to eq true
+    end
+
+  end
+
+
+  describe '#>=' do
+
+    it "returns true if the other is a superset" do
+      expect( @ot >= @subset ).to eq true
+    end
+
+    it "returns true if the other is the same" do
+      expect( @ot >= @hash2 ).to eq true
+    end
+
+  end
+
+
   describe "(miscelaneous other stuff)" do
-    # I "imagine" that the actual class uses Forwardable, but the test code
-    # shouldn't know or care about that.  In any case, just testing with
-    # responds_to always feels like cheating.
+    # I "imagine" that the actual class uses Forwardable, but the test code shouldn't know or care
+    # about that.  In any case, just testing with responds_to always feels like cheating.
 
     it "behaves like a Hash for a bunch of query methods" do
       expect( @ot.empty? ).not_to eq true
