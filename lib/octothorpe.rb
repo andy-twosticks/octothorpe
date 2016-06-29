@@ -31,7 +31,7 @@ require 'forwardable'
 #    empty?, has_key?, has_value?, include?
 #    each,   each_key, each_value, keys,    values
 #    select, map,      reject,     inject
-#    merge,  <,        >
+#    merge,  <, >< ==, >+, <=
 #
 class Octothorpe
   extend Forwardable
