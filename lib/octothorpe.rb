@@ -41,7 +41,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.3.0'
+  VERSION = '0.4.0'
 
 
   # Generic Octothorpe error class
@@ -183,6 +183,20 @@ class Octothorpe
       end
 
     Octothorpe.new(merged)
+  end
+
+
+  ##
+  # :call-seq:
+  #   ot.whitelist(:one, :two, :three) -> new_ot
+  #
+  # Return an Octothorpe containing only these keys.
+  #
+  # If you name a key that is missing, that key will also be missing in the output; use _Guard_
+  # if that's not what you want.
+  #
+  def whitelist(*keys)
+    Octothorpe.new @inner_hash.select{|k,_| symbol_hash(keys).include? k}
   end
 
 

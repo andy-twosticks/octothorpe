@@ -192,6 +192,31 @@ describe Octothorpe do
   end
 
 
+  describe "#whitelist" do
+
+    it "returns only the keys you give it" do
+      expect( @ot.whitelist(:one, :dup).to_h ).to eq(one: "a", dup: 3)
+    end
+
+    it "copes with symbols or strings as keys" do
+      expect( @ot.whitelist(:one, "weird key").to_h ).to eq(one: "a", :"weird key" => 4)
+    end
+
+    it "returns only the keys it has" do 
+      expect( @ot.whitelist(:one, :four, :two).to_h ).to eq(one: "a", two: 2)
+    end
+
+    it "returns an empty OT for an empty OT" do
+      expect( Octothorpe.new.whitelist(:foo) ).to eq Octothorpe.new
+    end
+
+    it "copes with a null whitelist" do
+      expect( @ot.whitelist ).to eq Octothorpe.new
+    end
+
+  end
+
+
   describe "#==" do
 
     context 'when passed a hash' do
