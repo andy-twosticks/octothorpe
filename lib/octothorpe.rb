@@ -58,7 +58,7 @@ class Octothorpe
   # Inner class for storage. This is to minimise namespace collision with key names. Not exposed to
   # Octothorpe's caller.
   #
-  class Storage
+  class Storage < BasicObject
     attr_reader :octothorpe_store
 
     def initialize(hash)
@@ -66,7 +66,7 @@ class Octothorpe
     end
 
     def method_missing(method, *attrs)
-      super if (block_given? || !attrs.empty?)
+      super if (::Kernel.block_given? || !attrs.empty?)
       @octothorpe_store[method.to_sym]
     end
 
