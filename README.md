@@ -30,7 +30,7 @@ Or install it yourself as:
 Simple example:
 
 ```ruby
-ot = Octotghorpe.new(one: 1, "two" => 2, "weird key" => 3)
+ot = Octothorpe.new(one: 1, "two" => 2, "weird key" => 3)
 ot.>>.one            # -> 1
 ot.>>.two            # -> 2
 ot.get("weird key")  # -> 3
@@ -39,7 +39,7 @@ ot.get("weird key")  # -> 3
 With guard conditions:
 
 ```ruby
-ot = Octotghorpe.new(one: 1, "two" => 2)
+ot = Octothorpe.new(one: 1, "two" => 2)
 ot.guard(Array, :three)
 ot.freeze       # optional step - makes OT truly read-only
 ot.>>.three     # -> [] 
@@ -61,6 +61,8 @@ see. Or, very nearly.
 Maybe not. Feel free to be your own judge.
 
 ### What possible use is it?
+
+Well, I use it to pass data between models, controllers and views in Sinatra. 
 
 If you are fed up with errors caused because Gem A gives you a hash with string keys and Gem B
 expects symbol keys; or you are tired of putting:
