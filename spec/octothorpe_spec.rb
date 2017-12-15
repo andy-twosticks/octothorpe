@@ -1,4 +1,5 @@
 require 'octothorpe'
+require 'date'
 
 describe Octothorpe do
 
@@ -26,6 +27,13 @@ describe Octothorpe do
       expect{ Octothorpe.new("hello") }.to raise_exception Octothorpe::BadHash
       expect{ Octothorpe.new(:boo)    }.to raise_exception Octothorpe::BadHash
       expect{ Octothorpe.new(14)      }.to raise_exception Octothorpe::BadHash
+    end
+
+    it "accepts a hash with a nil or non-string key" do
+      expect{ Octothorpe.new( {nil=>"foo"} ) }.not_to raise_exception
+      expect{ Octothorpe.new( {1=>"foo"}              ) }.not_to raise_exception
+      expect{ Octothorpe.new( {Date.new=>"foo"}       ) }.not_to raise_exception
+      expect{ Octothorpe.new( {Octothorpe.new=>"foo"} ) }.not_to raise_exception
     end
 
   end
@@ -66,6 +74,15 @@ describe Octothorpe do
       expect( @ot.get('weird key') ).to eq @hash2[:'weird key']
     end
 
+    it "will accept nil or non-string keys" do
+      hash = { nil => "nil", Date.new => "date", Octothorpe.new => "ot" }
+      ot   = Octothorpe.new(hash)
+
+      hash.each do |k,v|
+        expect( ot.get(k) ).to eq v
+      end
+    end
+
   end
 
 
@@ -97,6 +114,13 @@ describe Octothorpe do
 
     it "returns self" do
       expect( @ot.guard(Array, :foo) ).to eq @ot
+    end
+
+    it "will accept nil or non-string keys" do
+      hash = { nil => "nil", Date.new => "date", Octothorpe.new => "ot" }
+      ot   = Octothorpe.new(hash)
+
+      expect{ ot.guard(Hash, *hash.keys) }.not_to raise_exception
     end
 
     context "when given a class" do
@@ -147,7 +171,6 @@ describe Octothorpe do
       end
 
     end
-
 
   end
 

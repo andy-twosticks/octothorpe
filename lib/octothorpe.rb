@@ -41,7 +41,7 @@ class Octothorpe
   def_delegators :@inner_hash, :select, :map, :reject, :inject
 
   # Gem version number
-  VERSION = '0.4.0'
+  VERSION = '0.4.1'
 
 
   # Generic Octothorpe error class
@@ -67,7 +67,7 @@ class Octothorpe
 
     def method_missing(method, *attrs)
       super if (::Kernel.block_given? || !attrs.empty?)
-      @octothorpe_store[method.to_sym]
+      @octothorpe_store[method]
     end
 
   end
@@ -98,11 +98,11 @@ class Octothorpe
   #
   # You can use >> to access member objects in somewhat the same way as an OpenStruct.
   #
-  #   ot = Octotghorpe.new(one: 1, "two" => 2)
+  #   ot = Octothorpe.new(one: 1, "two" => 2)
   #   ot.>>.one  # -> 1
   #
-  # This will not work for members that have keys with spaces in, or keys which have the same name
-  # as methods on Object. Use _get_ for those.
+  # This will not work for members that have keys with spaces in, keys which have the same name as
+  # methods on Object, or keys that aren't String or Symbol. Use _get_ for those.
   #
   def >>; @store; end
 
@@ -118,7 +118,7 @@ class Octothorpe
   # Unlike >>, this works for keys with spaces, or keys that have the same name as methods on
   # Object.
   #
-  def get(key); @store.octothorpe_store[key.to_sym]; end
+  def get(key); @store.octothorpe_store[octokey key]; end
 
   alias send get
   alias [] get
@@ -150,7 +150,7 @@ class Octothorpe
     raise Frozen if self.frozen?
 
     klass = args.shift unless block_given?
-    keys  = args.map(&:to_sym)
+    keys  = args.map{|k| octokey k}
 
     if block_given?
       keys.each{|k| @store.octothorpe_store[k] ||= yield k }
@@ -229,10 +229,10 @@ class Octothorpe
     if thing.kind_of?(Octothorpe)
       thing.to_h
     else
-      thing.each_with_object({}) {|(k,v),m| m[k.to_sym] = v }
+      thing.each_with_object({}) {|(k,v),m| m[octokey k] = v }
     end
   rescue
-    raise BadHash
+    raise BadHash, $!
   end
 
 
@@ -244,6 +244,14 @@ class Octothorpe
     thisHash  = @store.octothorpe_store.to_h
     otherHash = symbol_hash(other)
     thisHash.send(method, otherHash)
+  end
+
+  
+  ##
+  # Munge a potential key so we can use it
+  #
+  def octokey(thing)
+    thing.is_a?(String) ? thing.to_sym : thing
   end
 
 end

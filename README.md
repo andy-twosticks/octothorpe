@@ -74,8 +74,8 @@ hash && (hash[:key] || {})[4]
 ... and for some reason Ruby's new lonely operator is a problem, then this might just possibly be
 of use. 
 
-Alternatively you might try an OpenStruct, Rails' HashWithIndifferentAccess, the Hashie gem or the
-AndAnd gem.
+Alternatively you might try a Struct. (Really, if you can use a Struct, then that would be better).
+Or an OpenStruct, Rails' HashWithIndifferentAccess, or the Hashie gem.
 
 ### Why Read-Only?
 
